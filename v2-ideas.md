@@ -1,0 +1,1 @@
+- SEC EDGAR: filing URLs from submissions API point to XBRL inline files. Agent should target the filing index page (https://www.sec.gov/cgi-bin/browse-edgar) for human-readable documents instead of primary document URL directly.
