@@ -1,0 +1,24 @@
+# Virtual environment
+venv/
+
+# Environment variables and secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Mac system files
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Jupyter (in case you ever run a notebook here)
+.ipynb_checkpoints/
+
+# Outputs are committed intentionally, but raw API response cache is not
+*.cache
