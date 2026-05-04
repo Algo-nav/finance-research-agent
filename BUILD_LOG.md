@@ -202,11 +202,89 @@ Three functions:
 
 ---
 
-## Week 3 — Planned
+## Week 3 — Reliability and Pre-generation Pipeline
 
-1. Retry logic with exponential backoff for Anthropic API rate limits and network timeouts.
-2. Prompt caching: cache the system prompt across iterations to reduce API cost by 5-10x.
-3. Pre-generation pipeline: `scripts/pregenerate.py` runs all 20 tickers, saves reports as JSON to `outputs/`.
+**Goal:** Retry logic, prompt caching, and all 20 reports pre-generated and committed.
+
+### Files Built
+
+**`agent/utils.py` — Retry Logic**
+
+Wraps `client.messages.create()` with exponential backoff retry handling.
+
+- Retries on: `RateLimitError`, `APIConnectionError`, `APIStatusError` with 529 status.
+- Raises immediately on: 400, 401, 404 and other non-retryable status codes.
+- Backoff schedule: 2s, 4s, 8s (BASE_DELAY=2, MAX_RETRIES=3).
+- Routes beta feature calls (prompt caching) through `client.beta.messages.create()` automatically when `betas` key is present in kwargs.
+
+Key pattern learned: distinguishing retryable (transient) from non-retryable (client error) failures. Retrying a 400 wastes time and credits; retrying a 429 is correct behavior.
+
+**`agent/agent.py` — Prompt Caching**
+
+System prompt restructured from a plain string to a cached content block:
+
+```python
+CACHED_SYSTEM_PROMPT = [
+    {
+        "type": "text",
+        "text": SYSTEM_PROMPT,
+        "cache_control": {"type": "ephemeral"}
+    }
+]
+```
+
+- Beta flag: `betas=["prompt-caching-2024-07-31"]` required to activate caching.
+- Cache TTL: 5 minutes (ephemeral). Sufficient for a single agent run.
+- Verified working: iteration 1 shows cache write tokens, iterations 2+ show cache read tokens.
+- `max_tokens` increased from 4096 to 8096 to accommodate full research note output.
+
+Cache verification results (AAPL run):
+- Iteration 1: 1,972 tokens written, 0 read.
+- Iteration 2: 0 written, 1,972 read.
+- Iteration 3: 346 written, 1,972 read.
+- Iteration 4: 4,078 written, 2,418 read.
+
+**`scripts/pregenerate.py` — Pre-generation Pipeline**
+
+Runs the agent on all 20 tickers sequentially, saves each report as JSON to `outputs/`, logs timing and success/failure per ticker.
+
+- Sequential execution with 10-second sleep between tickers to avoid rate limit cascades.
+- Per-ticker try/except: one failure does not stop the pipeline.
+- Output format: `{ticker, generated_at, report}` saved as `{ticker_lower}_report.json`.
+- Pipeline run log saved to `outputs/pipeline_log.json`.
+
+### Pre-generation Run Results
+
+- 20/20 tickers succeeded. Zero failures.
+- Average run time: 90-120 seconds per ticker.
+- Total pipeline time: approximately 48 minutes.
+- Report lengths: 11,000-16,000 characters per report.
+- All reports committed to `outputs/` in the GitHub repo.
+
+### Tickers Generated
+
+AAPL, MSFT, NVDA, GOOGL, META, AMZN, TSLA, JPM, BAC, BRK-B, UNH, JNJ, XOM, CAT, WMT, COST, TSM, ASML, PLTR, ARM.
+
+### Issues Resolved
+
+| Issue | Resolution |
+|---|---|
+| `max_tokens` too low, agent hit limit mid-response | Increased from 4096 to 8096 |
+| `betas` parameter on wrong client method | Routed beta calls through `client.beta.messages.create()` in utils.py |
+| `datetime.utcnow()` deprecation warning | Replaced with `datetime.now(timezone.utc)` |
+
+### Commits
+
+| Hash | Message |
+|---|---|
+| 711fa2e | Week 3: retry logic with exponential backoff and prompt caching |
+| a42708b | Week 3: pre-generation pipeline, 20 reports generated and committed |
+
+---
+
+## Week 4 — Gradio UI (In Progress)
+
+**Goal:** Build `app.py` with gallery mode (pre-generated reports) and live regen mode (agent runs in real time with visible reasoning trace). Deploy to Hugging Face Spaces.
 
 ---
 
@@ -216,7 +294,7 @@ Three functions:
 |---|---|
 | EDGAR filing URLs return XBRL data in IR fetcher | Parked in v2-ideas.md. Fix when wiring agent to use filing index pages |
 | FMP `return_on_equity` and `revenue_growth_yoy` null | Not exposed in stable Starter tier. Accept as limitation for v1 |
-| Tavily free tier (1000 credits) | Sufficient for build and 20-report pre-generation. Monitor usage |
-| Gradio vs Streamlit for Space UI | Deferred to week 5-6 when UI phase begins. Gradio recommended per spec |
-| Prompt caching implementation | Week 3 |
-| GitHub remote setup (Algo-nav) | Pending. Do before week 3 pre-generation run |
+| Tavily free tier (1000 credits) | Consumed during pre-generation run. Monitor remaining credits before live regen testing |
+| Gradio UI build | Week 4 |
+| README copy | Write at week 8 with positioning-doc voice rules |
+| Hugging Face Space deployment | Week 4-5 |
