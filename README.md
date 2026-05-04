@@ -184,21 +184,23 @@ Run the pre-generation pipeline:
 ```bash
 python scripts/pregenerate.py
 ```
-
 ---
 
 ## Repo structure
 
-agent/
-tools/            # Six data tools, one file each
-agent.py          # Agent loop
-utils.py          # Retry logic
-prompts/
-research_note.py  # System prompt
-outputs/            # Pre-generated reports (JSON)
-scripts/
-pregenerate.py    # Pipeline to generate all 20 reports
-app.py              # Gradio UI
+`agent/tools/` - Six data tools, one file each (yfinance, FRED, FMP, Tavily, SEC EDGAR, IR fetcher)
+
+`agent/agent.py` - Agent loop: tool definitions, execution, iteration cap
+
+`agent/utils.py` - Retry logic with exponential backoff
+
+`prompts/research_note.py` - System prompt: tool sequencing, output format, citation rules
+
+`outputs/` - Pre-generated reports as JSON, one per ticker
+
+`scripts/pregenerate.py` - Pipeline to run all 20 tickers sequentially
+
+`app.py` - Gradio UI: gallery tab and live regen tab
 
 ---
 
