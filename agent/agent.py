@@ -5,6 +5,18 @@ from dotenv import load_dotenv
 
 from agent.tools import TOOL_REGISTRY
 from prompts.research_note import SYSTEM_PROMPT
+from agent.utils import call_with_retry
+
+# Build the cached system prompt block once at module level.
+# This structure tells Claude to cache this content after the first call.
+# All subsequent calls in the same session read from cache at ~90% lower cost.
+CACHED_SYSTEM_PROMPT = [
+    {
+        "type": "text",
+        "text": SYSTEM_PROMPT,
+        "cache_control": {"type": "ephemeral"}
+    }
+]
 
 load_dotenv()
 
@@ -90,12 +102,14 @@ def run_research_agent(ticker: str) -> str:
         print(f"[Agent] Iteration {iteration}/{MAX_ITERATIONS}")
 
         # Call the Claude API with the current message history and tool definitions.
-        response = client.messages.create(
+        response = call_with_retry(
+            client,
             model="claude-sonnet-4-5",
             max_tokens=4096,
-            system=SYSTEM_PROMPT,
+            system=CACHED_SYSTEM_PROMPT,
             tools=tool_definitions,
             messages=messages,
+            betas=["prompt-caching-2024-07-31"],
         )
 
         print(f"[Agent] Stop reason: {response.stop_reason}")
