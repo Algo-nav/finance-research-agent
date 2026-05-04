@@ -133,6 +133,16 @@ In practice, bull and bear case points link to SEC filing URLs, earnings call tr
 
 ---
 
+## References
+
+This system implements patterns from two papers worth reading if you are building production agent systems:
+
+**ReAct: Synergizing Reasoning and Acting in Language Models** (Yao et al., 2023) describes the interleaving of reasoning and tool actions that underlies the agent loop here. The visible reasoning trace in the live regen tab is a direct application of the ReAct pattern. [arxiv.org/abs/2210.03629](https://arxiv.org/abs/2210.03629)
+
+**Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection** (Asai et al., 2023) introduces citation grounding and self-critique as core output requirements rather than optional features. The per-claim citation rule in this system's prompt follows the same principle. [arxiv.org/abs/2310.11511](https://arxiv.org/abs/2310.11511)
+
+---
+
 ## Stack
 
 - **Agent:** Anthropic Claude Sonnet via Messages API
