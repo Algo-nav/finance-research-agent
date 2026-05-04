@@ -105,7 +105,7 @@ def run_research_agent(ticker: str) -> str:
         response = call_with_retry(
             client,
             model="claude-sonnet-4-5",
-            max_tokens=4096,
+            max_tokens=8096,
             system=CACHED_SYSTEM_PROMPT,
             tools=tool_definitions,
             messages=messages,

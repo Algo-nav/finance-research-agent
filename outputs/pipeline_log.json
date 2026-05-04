@@ -1,0 +1,125 @@
+{
+  "success": [
+    {
+      "ticker": "AAPL",
+      "elapsed_seconds": 107.7,
+      "report_length": 16160,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/aapl_report.json"
+    },
+    {
+      "ticker": "MSFT",
+      "elapsed_seconds": 106.6,
+      "report_length": 15297,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/msft_report.json"
+    },
+    {
+      "ticker": "NVDA",
+      "elapsed_seconds": 119.8,
+      "report_length": 15371,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/nvda_report.json"
+    },
+    {
+      "ticker": "GOOGL",
+      "elapsed_seconds": 102.9,
+      "report_length": 13691,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/googl_report.json"
+    },
+    {
+      "ticker": "META",
+      "elapsed_seconds": 113.0,
+      "report_length": 15055,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/meta_report.json"
+    },
+    {
+      "ticker": "AMZN",
+      "elapsed_seconds": 97.7,
+      "report_length": 12220,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/amzn_report.json"
+    },
+    {
+      "ticker": "TSLA",
+      "elapsed_seconds": 123.6,
+      "report_length": 16516,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/tsla_report.json"
+    },
+    {
+      "ticker": "JPM",
+      "elapsed_seconds": 121.0,
+      "report_length": 17400,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/jpm_report.json"
+    },
+    {
+      "ticker": "BAC",
+      "elapsed_seconds": 104.9,
+      "report_length": 13695,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/bac_report.json"
+    },
+    {
+      "ticker": "BRK-B",
+      "elapsed_seconds": 107.6,
+      "report_length": 12743,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/brk_b_report.json"
+    },
+    {
+      "ticker": "UNH",
+      "elapsed_seconds": 105.7,
+      "report_length": 13673,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/unh_report.json"
+    },
+    {
+      "ticker": "JNJ",
+      "elapsed_seconds": 122.7,
+      "report_length": 13602,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/jnj_report.json"
+    },
+    {
+      "ticker": "XOM",
+      "elapsed_seconds": 130.4,
+      "report_length": 17026,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/xom_report.json"
+    },
+    {
+      "ticker": "CAT",
+      "elapsed_seconds": 94.9,
+      "report_length": 12218,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/cat_report.json"
+    },
+    {
+      "ticker": "WMT",
+      "elapsed_seconds": 103.6,
+      "report_length": 12981,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/wmt_report.json"
+    },
+    {
+      "ticker": "COST",
+      "elapsed_seconds": 125.7,
+      "report_length": 15424,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/cost_report.json"
+    },
+    {
+      "ticker": "TSM",
+      "elapsed_seconds": 130.2,
+      "report_length": 17134,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/tsm_report.json"
+    },
+    {
+      "ticker": "ASML",
+      "elapsed_seconds": 115.3,
+      "report_length": 16290,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/asml_report.json"
+    },
+    {
+      "ticker": "PLTR",
+      "elapsed_seconds": 126.3,
+      "report_length": 15854,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/pltr_report.json"
+    },
+    {
+      "ticker": "ARM",
+      "elapsed_seconds": 90.8,
+      "report_length": 13745,
+      "filepath": "/Users/macintoshhd/Desktop/Projects-2.0/finance-research-agent/outputs/arm_report.json"
+    }
+  ],
+  "failed": []
+}
