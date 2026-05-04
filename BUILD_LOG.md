@@ -282,9 +282,78 @@ AAPL, MSFT, NVDA, GOOGL, META, AMZN, TSLA, JPM, BAC, BRK-B, UNH, JNJ, XOM, CAT, 
 
 ---
 
-## Week 4 — Gradio UI (In Progress)
+## Week 4 — Gradio UI
 
-**Goal:** Build `app.py` with gallery mode (pre-generated reports) and live regen mode (agent runs in real time with visible reasoning trace). Deploy to Hugging Face Spaces.
+**Goal:** Build `app.py` with gallery mode (pre-generated reports) and live regen mode (agent runs in real time with visible reasoning trace).
+
+### Files Built
+
+**`app.py` — Full Gradio UI**
+
+Two-tab Gradio Blocks application.
+
+**Gallery tab:**
+- Dropdown of all 20 tickers.
+- Live snapshot cards (yfinance call on ticker select): Current Price, Market Cap, P/E, 52-Week Range, 1-Month Change, Sector.
+- Pre-generated research note rendered as markdown below the cards.
+- Source attribution on cards: "Yahoo Finance via yfinance. Live data."
+- No API calls for the report itself. Instant load from `outputs/` JSON files.
+
+**Live Research tab:**
+- Ticker text input and Run Research button.
+- Reasoning trace panel (left column): updates in real time as tool calls execute. Shows tool name, input preview, and result preview per call.
+- Research note panel (right column): populates when agent finishes.
+- Live snapshot cards appear above both columns when research completes.
+- Generator-based streaming via Python `yield` so UI updates incrementally.
+
+**Design:**
+- Dark charcoal header (`#0f1923`) with gold accent line (`#c8a96e`).
+- DM Serif Display for title. DM Mono for labels and reasoning trace. DM Sans for body.
+- Warm off-white background (`#f8f7f4`).
+- Run Research button: dark charcoal, inverts to gold on hover.
+
+### Key Concepts Learned
+
+**Gradio Blocks vs Interface**
+- `gr.Interface` is single input/output. `gr.Blocks` supports complex layouts, multiple tabs, custom event wiring.
+- `gr.Tabs` and `gr.Tab` for tab structure.
+- `.change()` for dropdown events, `.click()` for button events.
+
+**Gradio streaming with generators**
+- Functions that `yield` instead of `return` push incremental updates to the UI.
+- Each `yield` fires a UI update. Used to show reasoning trace updating per tool call.
+- Yield tuples when multiple outputs need updating simultaneously.
+
+**Gradio CSS in v6**
+- `css` parameter belongs in `gr.Blocks()` constructor.
+- Gradio CSS variables (`--body-background-fill` etc.) must be overridden to force light mode.
+- `gr.themes.Base().set()` is the reliable way to control theme colors.
+
+### Issues Resolved
+
+| Issue | Resolution |
+|---|---|
+| Agent preamble text leaking into report | Strip text before first markdown heading on load and in agent loop |
+| Dark mode overriding light theme | Ongoing. `gr.themes.Base().set()` with explicit colors. WIP. |
+| Button color not applying | Targeted `button.primary` selector with higher specificity |
+| `css` parameter warning in Gradio 6 | Moved `css` to `gr.Blocks()` constructor |
+
+### Commits
+
+| Hash | Message |
+|---|---|
+| a345ebf | Week 4: Gradio UI - gallery tab with live snapshot cards and live regen tab |
+| latest | Week 4: UI cleanup - preamble stripping, snapshot cards on live tab, dark mode WIP |
+
+---
+
+## Week 5 — Planned
+
+1. Resolve dark mode override issue definitively.
+2. Deploy to Hugging Face Spaces.
+3. Configure Space secrets (API keys).
+4. Test cold start and gallery load on Space.
+5. Fix any deployment-specific issues.
 
 ---
 
@@ -292,9 +361,9 @@ AAPL, MSFT, NVDA, GOOGL, META, AMZN, TSLA, JPM, BAC, BRK-B, UNH, JNJ, XOM, CAT, 
 
 | Item | Status |
 |---|---|
-| EDGAR filing URLs return XBRL data in IR fetcher | Parked in v2-ideas.md. Fix when wiring agent to use filing index pages |
-| FMP `return_on_equity` and `revenue_growth_yoy` null | Not exposed in stable Starter tier. Accept as limitation for v1 |
-| Tavily free tier (1000 credits) | Consumed during pre-generation run. Monitor remaining credits before live regen testing |
-| Gradio UI build | Week 4 |
+| Dark mode CSS override | WIP. Gradio 6 theme variables not fully overriding system dark mode. |
+| EDGAR filing URLs return XBRL data in IR fetcher | Parked in v2-ideas.md |
+| FMP `return_on_equity` and `revenue_growth_yoy` null | Accept as v1 limitation |
+| Tavily credits | Monitor remaining credits before live regen testing |
 | README copy | Write at week 8 with positioning-doc voice rules |
-| Hugging Face Space deployment | Week 4-5 |
+| Hugging Face Space deployment | Week 5 |
