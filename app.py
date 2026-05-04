@@ -33,8 +33,20 @@ def load_report(ticker: str) -> str:
     with open(filepath, "r") as f:
         data = json.load(f)
 
-    # Return just the report text. generated_at is metadata, not display content.
-    return data.get("report", "Report file exists but contains no content.")
+    text = data.get("report", "Report file exists but contains no content.")
+
+    # Strip any preamble before the first markdown heading.
+    # Pre-generated reports may contain agent reasoning before the note itself.
+    heading_index = -1
+    for marker in ["# ", "## "]:
+        idx = text.find(marker)
+        if idx != -1:
+            if heading_index == -1 or idx < heading_index:
+                heading_index = idx
+    if heading_index > 0:
+        text = text[heading_index:]
+
+    return text
 
 
 def get_snapshot_cards_html(ticker: str) -> str:
@@ -172,7 +184,7 @@ def run_agent_streaming(ticker: str):
 
     ticker = ticker.strip().upper()
     if not ticker:
-        yield "Please enter a ticker symbol.", ""
+        yield "Please enter a ticker symbol.", "", ""
         return
 
     client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -194,13 +206,12 @@ def run_agent_streaming(ticker: str):
     reasoning_lines = []
 
     reasoning_lines.append(f"Starting research for **{ticker}**...")
-    yield "\n".join(reasoning_lines), ""
+    yield "\n".join(reasoning_lines), "", ""
 
     while iteration < MAX_ITERATIONS:
         iteration += 1
         reasoning_lines.append(f"\n**Iteration {iteration}/{MAX_ITERATIONS}**")
-        yield "\n".join(reasoning_lines), ""
-
+        yield "\n".join(reasoning_lines), "", ""
         try:
             response = call_with_retry(
                 client,
@@ -213,7 +224,7 @@ def run_agent_streaming(ticker: str):
             )
         except Exception as e:
             reasoning_lines.append(f"API error: {e}")
-            yield "\n".join(reasoning_lines), ""
+            yield "\n".join(reasoning_lines), "", ""
             return
 
         messages.append({
@@ -226,9 +237,20 @@ def run_agent_streaming(ticker: str):
             final_report = ""
             for block in response.content:
                 if hasattr(block, "text"):
-                    final_report = block.text
+                    text = block.text
+                    # Strip preamble before first markdown heading.
+                    heading_index = -1
+                    for marker in ["# ", "## "]:
+                        idx = text.find(marker)
+                        if idx != -1:
+                            if heading_index == -1 or idx < heading_index:
+                                heading_index = idx
+                    if heading_index > 0:
+                        text = text[heading_index:]
+                    final_report = text
                     break
-            yield "\n".join(reasoning_lines), final_report
+            cards_html = get_snapshot_cards_html(ticker)
+            yield "\n".join(reasoning_lines), cards_html, final_report
             return
 
         if response.stop_reason == "tool_use":
@@ -241,14 +263,14 @@ def run_agent_streaming(ticker: str):
                     reasoning_lines.append(
                         f"- Tool: **{block.name}** | Input: `{input_preview}...`"
                     )
-                    yield "\n".join(reasoning_lines), ""
+                    yield "\n".join(reasoning_lines), "", ""
 
                     result = execute_tool(block.name, block.input)
 
                     # Show a short preview of the result.
                     result_preview = result[:120].replace("\n", " ")
                     reasoning_lines.append(f"  Result preview: `{result_preview}...`")
-                    yield "\n".join(reasoning_lines), ""
+                    yield "\n".join(reasoning_lines), "", ""
 
                     tool_results.append({
                         "type": "tool_result",
@@ -265,15 +287,41 @@ def run_agent_streaming(ticker: str):
             reasoning_lines.append(
                 f"Unexpected stop reason: {response.stop_reason}. Stopping."
             )
-            yield "\n".join(reasoning_lines), ""
+            yield "\n".join(reasoning_lines), "", ""
             return
 
     reasoning_lines.append("Reached maximum iterations.")
-    yield "\n".join(reasoning_lines), ""
+    yield "\n".join(reasoning_lines), "", ""
 
 
 custom_css = """
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
+/* Override Gradio CSS variables to force light mode */
+:root, [data-theme="dark"], [data-theme="light"] {
+    --body-background-fill: #f8f7f4 !important;
+    --block-background-fill: #ffffff !important;
+    --block-border-color: #e2ddd6 !important;
+    --block-label-text-color: #6b6560 !important;
+    --body-text-color: #2c2c2c !important;
+    --body-text-color-subdued: #6b6560 !important;
+    --input-background-fill: #ffffff !important;
+    --input-border-color: #d1ccc4 !important;
+    --color-accent: #0f1923 !important;
+    --button-primary-background-fill: #0f1923 !important;
+    --button-primary-text-color: #f8f7f4 !important;
+    --button-primary-background-fill-hover: #c8a96e !important;
+    --button-primary-text-color-hover: #0f1923 !important;
+    --neutral-100: #f8f7f4 !important;
+    --neutral-200: #e2ddd6 !important;
+    --neutral-700: #2c2c2c !important;
+    --neutral-800: #0f1923 !important;
+    --neutral-900: #0f1923 !important;
+    --background-fill-primary: #f8f7f4 !important;
+    --background-fill-secondary: #ffffff !important;
+    --border-color-primary: #e2ddd6 !important;
+    --color-text-body: #2c2c2c !important;
+}
 
 /* ---- Base ---- */
 .gradio-container {
@@ -281,6 +329,7 @@ custom_css = """
     margin: 0 auto !important;
     background: #f8f7f4 !important;
     font-family: 'DM Sans', sans-serif !important;
+    color: #2c2c2c !important;
 }
 
 /* ---- Header ---- */
@@ -320,7 +369,7 @@ button.selected {
     font-weight: 600 !important;
 }
 
-/* ---- Section headings inside tabs ---- */
+/* ---- Section headings ---- */
 .gr-markdown h2 {
     font-family: 'DM Serif Display', serif !important;
     font-size: 1.4rem !important;
@@ -337,24 +386,29 @@ button.selected {
     color: #0f1923 !important;
 }
 
-/* ---- Report display area ---- */
-.gr-markdown {
+/* ---- All text ---- */
+.gr-markdown, .gr-markdown p, .gr-markdown li,
+.gr-markdown td, .gr-markdown th {
     font-family: 'DM Sans', sans-serif !important;
     font-size: 0.93rem !important;
     line-height: 1.7 !important;
     color: #2c2c2c !important;
+    background: transparent !important;
 }
 
-/* ---- Dropdown and inputs ---- */
-.gr-dropdown, .gr-textbox {
+/* ---- Inputs ---- */
+.gr-dropdown, .gr-textbox, input, textarea {
     border: 1px solid #d1ccc4 !important;
     border-radius: 4px !important;
     background: #ffffff !important;
+    color: #0f1923 !important;
     font-family: 'DM Sans', sans-serif !important;
 }
 
-/* ---- Run button ---- */
-.gr-button-primary {
+/* ---- Buttons ---- */
+button.primary,
+.gr-button-primary,
+button[variant="primary"] {
     background: #0f1923 !important;
     color: #f8f7f4 !important;
     border: none !important;
@@ -366,24 +420,14 @@ button.selected {
     transition: background 0.2s ease !important;
 }
 
+button.primary:hover,
 .gr-button-primary:hover {
     background: #c8a96e !important;
     color: #0f1923 !important;
 }
 
-/* ---- Reasoning trace panel ---- */
-.reasoning-panel .gr-markdown {
-    background: #0f1923 !important;
-    color: #a8c4a0 !important;
-    font-family: 'DM Mono', monospace !important;
-    font-size: 0.8rem !important;
-    padding: 1rem !important;
-    border-radius: 4px !important;
-    min-height: 200px !important;
-}
-
 /* ---- Labels ---- */
-label {
+label, .gr-block-label {
     font-family: 'DM Mono', monospace !important;
     font-size: 0.75rem !important;
     text-transform: uppercase !important;
@@ -393,14 +437,27 @@ label {
 """
 
 def build_app():
+    light_theme = gr.themes.Base(
+        primary_hue=gr.themes.colors.stone,
+        neutral_hue=gr.themes.colors.stone,
+    ).set(
+        body_background_fill="#f8f7f4",
+        body_text_color="#2c2c2c",
+        background_fill_primary="#f8f7f4",
+        background_fill_secondary="#ffffff",
+        border_color_primary="#e2ddd6",
+        input_background_fill="#ffffff",
+        block_background_fill="#ffffff",
+        button_primary_background_fill="#0f1923",
+        button_primary_text_color="#f8f7f4",
+        button_primary_background_fill_hover="#c8a96e",
+    )
+
     with gr.Blocks(
         title="Finance Research Agent",
         css=custom_css,
-        theme=gr.themes.Base(
-            font=gr.themes.GoogleFont("DM Sans"),
-        )
+        theme=light_theme,
     ) as app:
-
         gr.HTML("""
             <div class="app-header">
                 <div class="app-title">Finance Research Agent</div>
@@ -462,6 +519,10 @@ def build_app():
                         variant="primary",
                         scale=1,
                     )
+
+                # Snapshot cards appear here when research completes.
+                live_snapshot_cards = gr.HTML(value="")
+
                 with gr.Row():
                     with gr.Column(scale=1):
                         reasoning_display = gr.Markdown(
@@ -476,7 +537,7 @@ def build_app():
                 run_button.click(
                     fn=run_agent_streaming,
                     inputs=ticker_input,
-                    outputs=[reasoning_display, live_report_display],
+                    outputs=[reasoning_display, live_snapshot_cards, live_report_display],
                 )
 
     return app
@@ -484,4 +545,4 @@ def build_app():
 
 if __name__ == "__main__":
     app = build_app()
-    app.launch()
+    app.launch(css=custom_css)

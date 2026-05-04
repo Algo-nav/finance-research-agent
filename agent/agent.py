@@ -124,8 +124,20 @@ def run_research_agent(ticker: str) -> str:
         if response.stop_reason == "end_turn":
             for block in response.content:
                 if hasattr(block, "text"):
-                    print(f"[Agent] Research note complete. Length: {len(block.text)} chars")
-                    return block.text
+                    text = block.text
+                    # Strip any preamble before the first markdown heading.
+                    # Claude sometimes thinks out loud before writing the note.
+                    # The actual report always starts with a # or ## heading.
+                    heading_index = -1
+                    for marker in ["# ", "## "]:
+                        idx = text.find(marker)
+                        if idx != -1:
+                            if heading_index == -1 or idx < heading_index:
+                                heading_index = idx
+                    if heading_index > 0:
+                        text = text[heading_index:]
+                    print(f"[Agent] Research note complete. Length: {len(text)} chars")
+                    return text
             return "Agent completed but produced no text output."
 
         # If Claude wants to call tools, execute each one.
