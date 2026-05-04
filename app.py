@@ -297,42 +297,6 @@ def run_agent_streaming(ticker: str):
 custom_css = """
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
-/* Override Gradio CSS variables to force light mode */
-:root, [data-theme="dark"], [data-theme="light"] {
-    --body-background-fill: #f8f7f4 !important;
-    --block-background-fill: #ffffff !important;
-    --block-border-color: #e2ddd6 !important;
-    --block-label-text-color: #6b6560 !important;
-    --body-text-color: #2c2c2c !important;
-    --body-text-color-subdued: #6b6560 !important;
-    --input-background-fill: #ffffff !important;
-    --input-border-color: #d1ccc4 !important;
-    --color-accent: #0f1923 !important;
-    --button-primary-background-fill: #0f1923 !important;
-    --button-primary-text-color: #f8f7f4 !important;
-    --button-primary-background-fill-hover: #c8a96e !important;
-    --button-primary-text-color-hover: #0f1923 !important;
-    --neutral-100: #f8f7f4 !important;
-    --neutral-200: #e2ddd6 !important;
-    --neutral-700: #2c2c2c !important;
-    --neutral-800: #0f1923 !important;
-    --neutral-900: #0f1923 !important;
-    --background-fill-primary: #f8f7f4 !important;
-    --background-fill-secondary: #ffffff !important;
-    --border-color-primary: #e2ddd6 !important;
-    --color-text-body: #2c2c2c !important;
-}
-
-/* ---- Base ---- */
-.gradio-container {
-    max-width: 100% !important;
-    margin: 0 auto !important;
-    background: #f8f7f4 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    color: #2c2c2c !important;
-}
-
-/* ---- Header ---- */
 .app-header {
     background: #0f1923;
     padding: 2.5rem 2rem 2rem 2rem;
@@ -357,57 +321,7 @@ custom_css = """
     text-transform: uppercase;
 }
 
-/* ---- Tabs ---- */
-.tab-nav {
-    background: #f8f7f4 !important;
-    border-bottom: 1px solid #e2ddd6 !important;
-}
-
-button.selected {
-    border-bottom: 2px solid #0f1923 !important;
-    color: #0f1923 !important;
-    font-weight: 600 !important;
-}
-
-/* ---- Section headings ---- */
-.gr-markdown h2 {
-    font-family: 'DM Serif Display', serif !important;
-    font-size: 1.4rem !important;
-    font-weight: 400 !important;
-    color: #0f1923 !important;
-    border-bottom: 1px solid #e2ddd6;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.gr-markdown h3 {
-    font-family: 'DM Sans', sans-serif !important;
-    font-weight: 600 !important;
-    color: #0f1923 !important;
-}
-
-/* ---- All text ---- */
-.gr-markdown, .gr-markdown p, .gr-markdown li,
-.gr-markdown td, .gr-markdown th {
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.93rem !important;
-    line-height: 1.7 !important;
-    color: #2c2c2c !important;
-    background: transparent !important;
-}
-
-/* ---- Inputs ---- */
-.gr-dropdown, .gr-textbox, input, textarea {
-    border: 1px solid #d1ccc4 !important;
-    border-radius: 4px !important;
-    background: #ffffff !important;
-    color: #0f1923 !important;
-    font-family: 'DM Sans', sans-serif !important;
-}
-
-/* ---- Buttons ---- */
 button.primary,
-.gr-button-primary,
 button[variant="primary"] {
     background: #0f1923 !important;
     color: #f8f7f4 !important;
@@ -420,43 +334,42 @@ button[variant="primary"] {
     transition: background 0.2s ease !important;
 }
 
-button.primary:hover,
-.gr-button-primary:hover {
+button.primary:hover {
     background: #c8a96e !important;
     color: #0f1923 !important;
 }
-
-/* ---- Labels ---- */
-label, .gr-block-label {
-    font-family: 'DM Mono', monospace !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.06em !important;
-    color: #6b6560 !important;
-}
 """
-
 def build_app():
-    light_theme = gr.themes.Base(
+    theme = gr.themes.Base(
         primary_hue=gr.themes.colors.stone,
         neutral_hue=gr.themes.colors.stone,
+        font=gr.themes.GoogleFont("DM Sans"),
     ).set(
+        # Backgrounds
         body_background_fill="#f8f7f4",
-        body_text_color="#2c2c2c",
         background_fill_primary="#f8f7f4",
         background_fill_secondary="#ffffff",
-        border_color_primary="#e2ddd6",
-        input_background_fill="#ffffff",
         block_background_fill="#ffffff",
+        input_background_fill="#ffffff",
+        # Text
+        body_text_color="#2c2c2c",
+        block_label_text_color="#6b6560",
+        input_placeholder_color="#9b9590",
+        # Borders
+        border_color_primary="#e2ddd6",
+        input_border_color="#d1ccc4",
+        block_border_color="#e2ddd6",
+        # Buttons
         button_primary_background_fill="#0f1923",
         button_primary_text_color="#f8f7f4",
         button_primary_background_fill_hover="#c8a96e",
+        button_primary_text_color_hover="#0f1923",
     )
 
     with gr.Blocks(
         title="Finance Research Agent",
         css=custom_css,
-        theme=light_theme,
+        theme=theme,
     ) as app:
         gr.HTML("""
             <div class="app-header">
